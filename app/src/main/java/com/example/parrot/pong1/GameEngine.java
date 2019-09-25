@@ -56,11 +56,12 @@ public class GameEngine extends SurfaceView implements Runnable {
 
     // variables for setting (left, top) position of paddle
     Point racketPosition;
-
+Point racketPosition2;
     // variables for controlling size of paddle
-    final int DISTANCE_FROM_BOTTOM = 350;
-    final int PADDLE_WIDTH = 100;
-    final int PADDLE_HEIGHT = 20;
+    final int DISTANCE_FROM_WALL = 100;
+    final int PADDLE_WIDTH = 10;
+    final int PADDLE_HEIGHT = 200;
+
 
     // ----------------------------
     // ## GAME STATS - number of lives, score, etc
@@ -93,9 +94,12 @@ public class GameEngine extends SurfaceView implements Runnable {
 
         // set the initial position of the racket
         racketPosition = new Point();
-        racketPosition.x = (this.screenWidth / 2) - PADDLE_WIDTH;   // left
-        racketPosition.y = (this.screenHeight - DISTANCE_FROM_BOTTOM - PADDLE_HEIGHT);                // top
-
+        racketPosition.x = DISTANCE_FROM_WALL;   // left
+        racketPosition.y = (this.screenHeight/2  - PADDLE_HEIGHT);                // top
+// set the initial position of the racket 2
+        racketPosition2 = new Point();
+        racketPosition2.x= (this.screenWidth  - DISTANCE_FROM_WALL - PADDLE_WIDTH);
+        racketPosition2.y = (this.screenHeight/2 - PADDLE_HEIGHT);
 
 
         // @TODO: Any other game setup stuff goes here
@@ -149,35 +153,55 @@ public class GameEngine extends SurfaceView implements Runnable {
     // ------------------------------
 
 
-    boolean movingDown = true;
-    final int BALL_SPEED = 10;
+    boolean BallMovingRight = true;
+    final int BALL_SPEED = 50;
 
-    boolean movingRight = true;
+    boolean Paddle2MovingUP = true;
     final int PADDLE_DISTANCE = 50;
+boolean gameOver = true;
 
     // 1. Tell Android the (x,y) positions of your sprites
     public void updatePositions() {
         // @TODO: Update the position of the sprites
 
-        if (movingDown == true) {
-            ballPosition.y = ballPosition.y + BALL_SPEED;
+        if (BallMovingRight == true) {
+            ballPosition.x = ballPosition.x + BALL_SPEED;
         }
         else {
-            ballPosition.y = ballPosition.y - BALL_SPEED;
+            ballPosition.x = ballPosition.x - BALL_SPEED;
+        }
+
+
+        // GAME LOSE CONDITION
+        if(ballPosition.x < 0)
+        {
+            gameOver = true;
+        }
+        /// paddle 2 is moving
+        if (Paddle2MovingUP == true){
+            racketPosition2.y = racketPosition2.y + PADDLE_DISTANCE;
+
+        }
+        else{
+            racketPosition2.y = racketPosition2.y - PADDLE_DISTANCE;
         }
 
         // @TODO: Collision detection code
-        if (ballPosition.y > screenHeight) {
+        if (ballPosition.x <= DISTANCE_FROM_WALL) {
             Log.d(TAG, "Ball reached bottom of screen. Changing direction!");
-            movingDown = false;
+            BallMovingRight = true;
         }
 
-        if (ballPosition.y < 0) {
+        if (ballPosition.x >= screenWidth - DISTANCE_FROM_WALL- PADDLE_WIDTH) {
             Log.d(TAG, "Ball reached TOP of screen. Changing direction!");
-            movingDown = true;
+            BallMovingRight = false;
             this.score = this.score + 1;
         }
-
+// collison detection for paddle
+        if (racketPosition2.y > screenHeight)
+            Paddle2MovingUP  = false;
+        if ( racketPosition2.y < 0)
+            Paddle2MovingUP = true;
         // Log.d(TAG, "Ball y-position: " + ballPosition.y);
 
     }
@@ -209,9 +233,15 @@ public class GameEngine extends SurfaceView implements Runnable {
             // draw the paddle
             int paddleLeft = racketPosition.x;
             int paddleTop = racketPosition.y;
-            int paddleRight = racketPosition.x + 2*PADDLE_WIDTH;
-            int paddleBottom = racketPosition.y + PADDLE_HEIGHT;
+            int paddleRight = racketPosition.x + PADDLE_WIDTH;
+            int paddleBottom = racketPosition.y + 2*PADDLE_HEIGHT;
             canvas.drawRect(paddleLeft, paddleTop, paddleRight, paddleBottom, paintbrush);
+            //draw the paddle 2
+            int paddle2Left = racketPosition2.x ;
+            int paddle2Top = racketPosition2.y;
+            int paddle2Right = racketPosition2.x + PADDLE_WIDTH;
+            int paddle2Bottom = racketPosition2.y - 2*PADDLE_HEIGHT;
+            canvas.drawRect(paddle2Left, paddle2Top, paddle2Right, paddle2Bottom, paintbrush);
 
             //@TODO: Draw game statistics (lives, score, etc)
             paintbrush.setTextSize(60);
@@ -245,13 +275,13 @@ public class GameEngine extends SurfaceView implements Runnable {
 
             Log.d(TAG, "The person tapped: (" + event.getX() + "," + event.getY() + ")");
 
-            if (event.getX() < this.screenWidth / 2) {
+            if (event.getY() < this.screenHeight / 2) {
                 Log.d(TAG, "Person clicked LEFT side");
-                racketPosition.x = racketPosition.x - PADDLE_DISTANCE;
+                racketPosition.y = racketPosition.y - PADDLE_DISTANCE ;
             }
             else {
                 Log.d(TAG, "Person clicked RIGHT side");
-                racketPosition.x = racketPosition.x + PADDLE_DISTANCE;
+                racketPosition.y = racketPosition.y + PADDLE_DISTANCE;
             }
 
 
